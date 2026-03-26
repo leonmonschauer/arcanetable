@@ -57,6 +57,23 @@ let dragTargets: THREE.Object3D[];
 let hand: Hand;
 let time = 0;
 let playArea: PlayArea;
+const HAND_OFFSET_X = -18;
+const HAND_OFFSET_Y = -28;
+const HAND_OFFSET_Z = -70;
+const HAND_ROT_X = 0;
+const HAND_ROT_Y = 0;
+const HAND_ROT_Z = 0;
+
+const HAND_CAMERA_OFFSET = new THREE.Vector3(HAND_OFFSET_X, HAND_OFFSET_Y, HAND_OFFSET_Z);
+const HAND_CAMERA_ROTATION_OFFSET = new THREE.Quaternion().setFromEuler(
+  new THREE.Euler(HAND_ROT_X, HAND_ROT_Y, HAND_ROT_Z),
+);
+let handCameraOffset: THREE.Vector3;
+let handCameraRotationOffset: THREE.Quaternion;
+const _tmpVec3 = new THREE.Vector3();
+const _tmpVec3b = new THREE.Vector3();
+const _tmpQuat = new THREE.Quaternion();
+const _tmpQuat2 = new THREE.Quaternion();
 
 interface GameOptions {
   gameId: string;
@@ -149,7 +166,30 @@ export async function loadDeckAndJoin(settings) {
   hand = playArea.hand;
 
   table.add(playArea.mesh);
+  attachHandToCamera();
   renderer.compile(scene, camera);
+}
+
+function attachHandToCamera() {
+  const handMesh = playArea?.hand?.mesh;
+  if (!handMesh) return;
+
+  handCameraOffset = HAND_CAMERA_OFFSET.clone();
+  handCameraRotationOffset = HAND_CAMERA_ROTATION_OFFSET.clone();
+  scene.attach(handMesh);
+  updateAttachedHandPose();
+}
+
+function updateAttachedHandPose() {
+  const handMesh = playArea?.hand?.mesh;
+  if (!handMesh || !handCameraOffset || !handCameraRotationOffset) return;
+
+  const cameraWorldPosition = camera.getWorldPosition(_tmpVec3);
+  const cameraWorldQuaternion = camera.getWorldQuaternion(_tmpQuat);
+
+  _tmpVec3b.copy(handCameraOffset).applyQuaternion(cameraWorldQuaternion);
+  handMesh.position.copy(cameraWorldPosition).add(_tmpVec3b);
+  handMesh.quaternion.copy(_tmpQuat2.copy(cameraWorldQuaternion).multiply(handCameraRotationOffset));
 }
 
 function onDocumentScroll(event) {
@@ -549,6 +589,7 @@ function focusOn(target: THREE.Object3D) {
 function render3d(delta: number) {
   renderAnimations(time);
   updateTextureAnimation(delta);
+  updateAttachedHandPose();
 
   raycaster.setFromCamera(mouse, camera);
 
