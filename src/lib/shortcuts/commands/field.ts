@@ -1,10 +1,16 @@
 import { Mesh } from 'three';
+import { provider } from '~/lib/globals';
 import { PlayArea } from '~/lib/playArea';
 
 export function untapAll(playArea: PlayArea) {
-  let tappedCards = playArea.battlefieldZone.mesh.children.filter(
-    mesh => mesh.userData.isTapped,
-  ) as Mesh[];
+  const localClientId = provider?.awareness?.clientID;
+  let tappedCards = playArea.battlefieldZone.cards
+    .map(card => card.mesh)
+    .filter(
+      mesh =>
+        mesh.userData.isTapped &&
+        (localClientId === undefined || mesh.userData.clientId === localClientId),
+    ) as Mesh[];
 
   tappedCards.forEach(card => playArea.tap(card));
 }
