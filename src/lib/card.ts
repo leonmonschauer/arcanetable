@@ -21,6 +21,7 @@ import {
   cardLoadingTexture,
   cardsById,
   getProjectionVec,
+  provider,
   scene,
   textureLoader,
   textureLoaderWorker,
@@ -29,6 +30,7 @@ import { counters } from './ui/counterDialog';
 import { cleanupFromNode, isValidMaterial } from './utils';
 
 interface CardUserData {
+  frontFaceMaterial?: Material;
   cardBack?: Material;
   publicCardBack?: Material;
   resting?: Vector3Like;
@@ -127,7 +129,8 @@ export async function loadCardTextures(
   let frontPromise = cache.get(front)!;
 
   frontPromise.then(mat => {
-    card.mesh.material[4] = mat.clone();
+    card.mesh.userData.frontFaceMaterial = mat.clone();
+    applyCardFaceVisibility(card.mesh);
   });
 
   if (back) {
@@ -208,7 +211,7 @@ export function cloneCard(card: Card, newId: string): Card {
 export function splitUserdata(userData: CardUserData) {
   const [transferable, _, cloneable] = splitProps(
     userData,
-    ['cardBack', 'publicCardBack'],
+    ['frontFaceMaterial', 'cardBack', 'publicCardBack'],
     ['resting'],
   );
   return [transferable, cloneable];
@@ -337,6 +340,9 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
   set(cardMesh.userData, field, value);
 
   // after setting value
+  if (['isPublic', 'location', 'clientId'].includes(field)) {
+    applyCardFaceVisibility(cardMesh);
+  }
 
   if (field === 'isFlipped') {
     modifiersNeedUpdate = true;
@@ -346,6 +352,15 @@ export function setCardData(cardMesh: Mesh, field: string, value: unknown) {
     let card = cardsById.get(cardMesh.userData.id);
     if (card) updateModifiers(card);
   }
+}
+
+function applyCardFaceVisibility(cardMesh: Mesh) {
+  const localClientId = provider?.awareness?.clientID;
+  const isOwner = localClientId !== undefined && cardMesh.userData.clientId === localClientId;
+  const shouldHideFront = !isOwner && cardMesh.userData.location === 'hand' && !cardMesh.userData.isPublic;
+  const visibleFrontMaterial = cardMesh.userData.frontFaceMaterial ?? cardMesh.material[4];
+  cardMesh.material[4] = shouldHideFront ? blackMat : visibleFrontMaterial;
+  cardMesh.material[4].needsUpdate = true;
 }
 
 const textCanvas = document.createElement('canvas');
