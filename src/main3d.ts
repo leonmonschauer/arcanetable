@@ -202,6 +202,20 @@ function onDocumentMouseDown(event) {}
 
 let isDragging = false;
 
+function getLocalDropIntersection(
+  intersections: THREE.Intersection<THREE.Object3D<THREE.Object3DEventMap>>[],
+  dragTargetsById: Record<string, THREE.Object3D>,
+) {
+  const localClientId = provider.awareness.clientID;
+  return intersections.find(hit => {
+    const { object } = hit;
+    if (dragTargetsById[object.userData.id]) return false;
+    if (!object.userData.zoneId) return false;
+    if (!zonesById.get(object.userData.zoneId)) return false;
+    return object.userData.clientId === localClientId;
+  });
+}
+
 function onDocumentClick(event: PointerEvent) {
   raycaster.setFromCamera(mouse, camera);
   let intersects = raycaster.intersectObject(scene);
@@ -342,15 +356,9 @@ async function onDocumentDrop(event) {
   let intersections = raycaster.intersectObject(scene);
 
   let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
-  let intersection = intersections.find(
-    i =>
-      !targetsById[i.object.userData.id] &&
-      (i.object.userData.clientId === undefined ||
-        i.object.userData.clientId === provider.awareness.clientID ||
-        i.object.userData.isPublic) &&
-      (i.object.userData.isInteractive || i.object.userData.zone),
-  );
+  let intersection = getLocalDropIntersection(intersections, targetsById);
   if (!intersection) {
+    dragTargets.forEach(target => setCardData(target, 'isDragging', false));
     dragTargets = [];
     return;
   }
@@ -364,6 +372,7 @@ async function onDocumentDrop(event) {
     let fromZoneId = target.userData.zoneId;
     let fromZone = zonesById.get(fromZoneId);
     let toZone = zonesById.get(toZoneId);
+    if (!fromZone || !toZone) continue;
 
     if (fromZoneId && fromZoneId === toZoneId) {
       setCardData(target, `zone.${toZone.id}.position`, target.position.toArray());
@@ -449,8 +458,10 @@ function onDocumentMouseMove(event) {
     raycaster.setFromCamera(mouse, camera);
 
     let intersections = raycaster.intersectObject(scene);
+    let targetsById = Object.fromEntries(dragTargets.map(target => [target.userData.id, target]));
+    let localDropIntersection = getLocalDropIntersection(intersections, targetsById);
 
-    restackItems(dragTargets, intersections);
+    restackItems(dragTargets, localDropIntersection ? [localDropIntersection] : []);
 
     if (hoverSignal()) {
       setHoverSignal(signal => {

@@ -91,6 +91,13 @@ export class PlayArea {
     this.graveyardZone = new CardStack('graveyard', state.graveyard?.id);
     this.exileZone = new CardStack('exile', state.exile?.id);
 
+    this.battlefieldZone.mesh.userData.clientId = clientId;
+    this.peekZone.mesh.userData.clientId = clientId;
+    this.revealZone.mesh.userData.clientId = clientId;
+    this.tokenSearchZone.mesh.userData.clientId = clientId;
+    this.graveyardZone.mesh.userData.clientId = clientId;
+    this.exileZone.mesh.userData.clientId = clientId;
+
     this.exileZone.mesh.position.set(EXILE_X, EXILE_Y, 2.5);
     this.graveyardZone.mesh.position.set(GRAVEYARD_X, GRAVEYARD_Y, 2.5);
 
@@ -112,6 +119,8 @@ export class PlayArea {
 
     this.deck = new Deck(deckCards, state?.deck?.id);
     this.hand = new Hand(state?.hand?.id, this.isLocalPlayArea);
+    this.deck.mesh.userData.clientId = clientId;
+    this.hand.mesh.userData.clientId = clientId;
 
     if (this.isLocalPlayArea) {
       this.deck.mesh.addEventListener('click', e => {
