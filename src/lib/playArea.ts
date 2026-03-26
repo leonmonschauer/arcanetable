@@ -12,7 +12,19 @@ import {
 import { CardArea } from './cardArea';
 import { CardGrid } from './cardGrid';
 import { CardStack } from './cardStack';
-import { Card, CARD_HEIGHT, CARD_WIDTH, CardZone, SerializableCard } from './constants';
+import {
+  BATTLEFIELD_HEIGHT,
+  Card,
+  CARD_HEIGHT,
+  CARD_WIDTH,
+  CardZone,
+  DECK_X,
+  EXILE_X,
+  EXILE_Y,
+  GRAVEYARD_X,
+  GRAVEYARD_Y,
+  SerializableCard,
+} from './constants';
 import { Deck, loadCardList, loadDeckList } from './deck';
 import { cardsById, doXTimes, focusCamera, provider, zonesById } from './globals';
 import { Hand } from './hand';
@@ -79,8 +91,8 @@ export class PlayArea {
     this.graveyardZone = new CardStack('graveyard', state.graveyard?.id);
     this.exileZone = new CardStack('exile', state.exile?.id);
 
-    this.exileZone.mesh.position.set(88, -55, 2.5);
-    this.graveyardZone.mesh.position.set(70, -80, 2.5);
+    this.exileZone.mesh.position.set(EXILE_X, EXILE_Y, 2.5);
+    this.graveyardZone.mesh.position.set(GRAVEYARD_X, GRAVEYARD_Y, 2.5);
 
     this.cards = cards.map(card => {
       card.id = card.id || nanoid();
@@ -471,7 +483,7 @@ export class PlayArea {
         setCardData(initializedCard.mesh, 'isPublic', true);
         playArea.battlefieldZone.addCard(initializedCard, {
           skipAnimation: true,
-          positionArray: [100 - (CARD_WIDTH + 2) * (i + 1), 50 - CARD_HEIGHT - 2, 0.125],
+          positionArray: [DECK_X - (CARD_WIDTH + 2) * (i + 1), BATTLEFIELD_HEIGHT / 2 - CARD_HEIGHT - 2, 0.125],
         });
       });
     }

@@ -15,6 +15,9 @@ import {
 import { animateObject } from './animations';
 import { getSerializableCard, setCardData } from './card';
 import {
+  BATTLEFIELD_HEIGHT,
+  BATTLEFIELD_WIDTH,
+  BATTLEFIELD_Y,
   Card,
   CARD_HEIGHT,
   CARD_STACK_OFFSET,
@@ -37,14 +40,14 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     public zone: string,
     public id: string = nanoid(),
   ) {
-    let geometry = new BoxGeometry(200, 100, CARD_THICKNESS / 2);
+    let geometry = new BoxGeometry(BATTLEFIELD_WIDTH, BATTLEFIELD_HEIGHT, CARD_THICKNESS / 2);
     let material = new MeshStandardMaterial({ color: CARD_ZONE_COLOR }); //#9d9eae // 1e2029
     this.mesh = new Mesh(geometry, material);
     this.mesh.userData.zone = zone;
     this.mesh.userData.zoneId = id;
     this.mesh.userData.id = id;
     this.cards = [];
-    this.mesh.position.setY(-50);
+    this.mesh.position.setY(BATTLEFIELD_Y);
     this.mesh.receiveShadow = true;
     let edges = new EdgesGeometry(geometry);
     let lineSegments = new LineSegments(
@@ -77,7 +80,9 @@ export class CardArea implements CardZone<{ positionArray?: [number, number, num
     } else if (card.mesh.userData?.zone?.[this.id]?.position) {
       position = new Vector3().fromArray(card.mesh.userData.zone[this.id].position);
     } else {
-      let rayOrigin = this.mesh.localToWorld(new Vector3(25, 50 - CARD_HEIGHT - 2, 10));
+      let rayOrigin = this.mesh.localToWorld(
+        new Vector3(25, BATTLEFIELD_HEIGHT / 2 - CARD_HEIGHT - 2, 10),
+      );
       let direction = this.mesh.getWorldDirection(new Vector3(0, -1, 0)).multiplyScalar(-1);
       let raycaster = new Raycaster(rayOrigin, direction);
 

@@ -3,7 +3,7 @@ import { createStore, SetStoreFunction } from 'solid-js/store';
 import { CatmullRomCurve3, Euler, Group, Mesh, Vector3 } from 'three';
 import { animateObject, queueAnimationGroup } from './animations';
 import { cleanupCard, getSearchLine, getSerializableCard, setCardData } from './card';
-import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone } from './constants';
+import { Card, CARD_THICKNESS, CARD_WIDTH, CardZone, DECK_X, DECK_Y } from './constants';
 import { deck as deckParser } from './deckParser';
 import { cardsById, setHoverSignal, zonesById } from './globals';
 import { cleanupMesh, getGlobalRotation, shuffleItems } from './utils';
@@ -25,7 +25,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
     zonesById.set(this.id, this);
 
     this.mesh.rotation.set(0, Math.PI, 0);
-    this.mesh.position.set(70, -55, cards.length * 0.125 + 2.5);
+    this.mesh.position.set(DECK_X, DECK_Y, cards.length * 0.125 + 2.5);
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'deck';
     this.mesh.userData.id = id;
@@ -67,7 +67,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       position,
     ]);
 
-    this.mesh.position.copy(new Vector3(70, -55, this.cards.length * 0.125 + 2.5));
+    this.mesh.position.copy(new Vector3(DECK_X, DECK_Y, this.cards.length * 0.125 + 2.5));
 
     animateObject(this.mesh, {
       completeOnCancel: true,
@@ -209,7 +209,7 @@ export class Deck implements CardZone<{ location: 'top' | 'bottom' }> {
       completeOnCancel: true,
       duration: 0.2,
       to: {
-        position: new Vector3(70, -55, this.cards.length * CARD_THICKNESS + 2.5),
+        position: new Vector3(DECK_X, DECK_Y, this.cards.length * CARD_THICKNESS + 2.5),
       },
     });
     await Promise.all(

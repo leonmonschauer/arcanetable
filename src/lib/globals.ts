@@ -23,7 +23,7 @@ import { WebrtcProvider } from 'y-webrtc';
 import { WebsocketProvider } from 'y-websocket';
 import { Doc } from 'yjs';
 import { YArray } from 'yjs/dist/src/internals';
-import { Card, CARD_WIDTH, CardZone } from './constants';
+import { Card, CARD_WIDTH, CardZone, TABLE_SIZE } from './constants';
 import type { PlayArea } from './playArea';
 import TextureLoaderWorker from './textureLoaderWorker?worker';
 import { cleanupFromNode, getFocusCameraPositionRelativeTo } from './utils';
@@ -167,21 +167,35 @@ export function init({ gameId }) {
 
   focusRayCaster = new Raycaster();
 
-  const tableGeometry = new BoxGeometry(200, 200, 5);
+  const tableGeometry = new BoxGeometry(TABLE_SIZE, TABLE_SIZE, 5);
   const tableMaterial = new MeshStandardMaterial({ color: 0x2c1b4e });
   table = new Mesh(tableGeometry, tableMaterial);
   table.receiveShadow = true;
   table.userData.zone = 'battlefield';
   table.rotateX(Math.PI * -0.5);
   scene.add(table);
+
+  orbitControls = new OrbitControls(camera, renderer.domElement);
+  orbitControls.enableRotate = false;
+  orbitControls.enablePan = true;
+  orbitControls.enableZoom = true;
+  orbitControls.mouseButtons = {
+    LEFT: THREE.MOUSE.NONE,
+    MIDDLE: THREE.MOUSE.DOLLY,
+    RIGHT: THREE.MOUSE.PAN,
+  };
+  orbitControls.minDistance = 80;
+  orbitControls.maxDistance = 420;
+  orbitControls.target.copy(table.position);
+  orbitControls.update();
 }
 
 export function startSpectating() {
   setIsSpectating(true);
   setPlayerCount(count => count - 1);
   provider.awareness.setLocalStateField('isSpectating', true);
-  orbitControls = new OrbitControls(camera, renderer.domElement);
-  orbitControls.target = table.position;
+  orbitControls.target.copy(table.position);
+  orbitControls.update();
 
   let curIndex = 0;
   Object.values(playAreas).forEach((playArea, i) => {
@@ -215,6 +229,7 @@ export function cleanup() {
   if (!renderer) return;
 
   selection.destroy();
+  orbitControls?.dispose();
 
   renderer.domElement.remove();
   renderer.dispose();

@@ -2,7 +2,7 @@ import { nanoid } from 'nanoid';
 import { CatmullRomCurve3, Euler, Group, Object3D, Vector3 } from 'three';
 import { animateObject } from './animations';
 import { cleanupCard, getSerializableCard, setCardData } from './card';
-import { Card, CardZone } from './constants';
+import { Card, CardZone, HAND_Y, HAND_Z } from './constants';
 import { cardsById, setHoverSignal, zonesById } from './globals';
 import { getGlobalRotation } from './utils';
 import { createStore, SetStoreFunction } from 'solid-js/store';
@@ -26,7 +26,7 @@ export class Hand implements CardZone {
     this.mesh.userData.isInteractive = true;
     this.mesh.userData.zone = 'hand';
     this.mesh.rotateX(Math.PI * 0.25);
-    this.mesh.position.set(0, -120, 40);
+    this.mesh.position.set(0, HAND_Y, HAND_Z);
     this.mesh.userData.id = id;
     this.mesh.userData.resting = this.mesh.position.clone();
     this.zone = 'hand';

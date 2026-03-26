@@ -6,7 +6,7 @@ import { OutlinePass } from 'three/examples/jsm/postprocessing/OutlinePass';
 import { RenderPass } from 'three/examples/jsm/postprocessing/RenderPass';
 import { animateObject, cancelAnimation, renderAnimations } from './lib/animations';
 import { cloneCard, getCardMeshTetherPoint, setCardData, updateTextureAnimation } from './lib/card';
-import { CARD_STACK_OFFSET, CARD_THICKNESS, CardZone } from './lib/constants';
+import { CARD_STACK_OFFSET, CARD_THICKNESS, CardZone, TABLE_SIZE } from './lib/constants';
 import {
   animating,
   camera,
@@ -21,6 +21,7 @@ import {
   init,
   initClock,
   isSpectating,
+  orbitControls,
   playAreas,
   provider,
   renderer,
@@ -92,10 +93,10 @@ export async function localInit(gameOptions: GameOptions) {
   directionalLight.intensity = 2;
   directionalLight.position.set(0, 200, 0);
   directionalLight.shadow.mapSize.set(1024 * 2, 1024 * 2);
-  directionalLight.shadow.camera.left = -140;
-  directionalLight.shadow.camera.right = 140;
-  directionalLight.shadow.camera.top = 140;
-  directionalLight.shadow.camera.bottom = -140;
+  directionalLight.shadow.camera.left = -TABLE_SIZE;
+  directionalLight.shadow.camera.right = TABLE_SIZE;
+  directionalLight.shadow.camera.top = TABLE_SIZE;
+  directionalLight.shadow.camera.bottom = -TABLE_SIZE;
   directionalLight.castShadow = true;
   directionalLight.shadow.camera.far = 400;
   scene.add(directionalLight);
@@ -112,6 +113,7 @@ export async function localInit(gameOptions: GameOptions) {
   composer.addPass(new RenderPass(scene, camera));
 
   renderer.domElement.addEventListener('mousemove', onDocumentMouseMove, false);
+  renderer.domElement.addEventListener('contextmenu', event => event.preventDefault(), false);
   document.addEventListener('mousedown', onDocumentMouseDown, false);
   document.addEventListener('click', onDocumentClick, false);
   document.addEventListener('dragstart', onDocumentDragStart, false);
@@ -575,7 +577,7 @@ function render3d(delta: number) {
     }
   }
 
-  camera.lookAt(scene.position);
+  orbitControls?.update();
   composer.render();
   if (hoverSignal()?.mesh) {
     let mesh = hoverSignal().mesh as THREE.Mesh;
