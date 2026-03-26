@@ -303,8 +303,15 @@ async function onDocumentDrop(event) {
   let intersection = intersections.find(
     i =>
       !targetsById[i.object.userData.id] &&
+      (i.object.userData.clientId === undefined ||
+        i.object.userData.clientId === provider.awareness.clientID ||
+        i.object.userData.isPublic) &&
       (i.object.userData.isInteractive || i.object.userData.zone),
-  )!;
+  );
+  if (!intersection) {
+    dragTargets = [];
+    return;
+  }
 
   let shouldClearSelection = false;
 
@@ -336,7 +343,7 @@ async function onDocumentDrop(event) {
     }
 
     let card = cardsById.get(target.userData.id);
-    let position = toZone.mesh.worldToLocal(intersection.point);
+    let position = toZone.mesh.worldToLocal(intersection.point.clone());
     expect(!!card, `card not found`, { card });
 
     console.log({ card, target });
