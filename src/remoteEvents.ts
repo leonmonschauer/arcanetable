@@ -94,14 +94,15 @@ const EVENTS = {
     onConcede(event.clientID);
   },
   toggleTokenMenu(event: Event, playArea: PlayArea) {
-    return playArea.toggleTokenMenu(event.payload);
+    return playArea.toggleTokenMenu(event.payload, { preventEmit: true });
   },
   queueAnimationGroup(event: Event) {
     queueAnimationGroup();
   },
   modifyCard(event: Event, playArea: PlayArea, card: Card) {
+    if (!card) return;
     setCardData(card.mesh, 'modifiers', event.payload.userData.modifiers);
-    playArea.modifyCard(card);
+    playArea.modifyCard(card, x => x, { preventEmit: true });
   },
   createCounter(event: Event) {
     setCounters(counters => uniqBy([...counters, event.counter], 'id'));
@@ -131,13 +132,15 @@ const EVENTS = {
     zone?.addCard(card, options);
   },
   tap(event: Event, playArea: PlayArea, card: Card) {
-    playArea?.tap(card.mesh);
+    if (!card) return;
+    playArea?.tap(card.mesh, { preventEmit: true });
   },
   flip(event: Event, playArea: PlayArea, card: Card) {
-    playArea?.flip(card.mesh);
+    if (!card) return;
+    playArea?.flip(card.mesh, { preventEmit: true });
   },
   clone(event: Event, playArea: PlayArea) {
-    playArea?.clone(event.payload.id, event.payload.newId);
+    playArea?.clone(event.payload.id, event.payload.newId, { preventEmit: true });
   },
   reveal(event: Event, remotePlayArea: PlayArea, card: Card) {
     expect(!!card, 'card not found');
@@ -148,13 +151,13 @@ const EVENTS = {
     playArea.reveal(cardProxy);
   },
   deckFlipTop(event: Event, playArea: PlayArea) {
-    playArea?.deckFlipTop(event.payload.toggle);
+    playArea?.deckFlipTop(event.payload.toggle, { preventEmit: true });
   },
   shuffleDeck(event: Event, playArea: PlayArea) {
-    return playArea?.shuffleDeck(event.payload.order);
+    return playArea?.shuffleDeck(event.payload.order, { preventEmit: true });
   },
   mulligan(event: Event, playArea: PlayArea) {
-    return playArea.mulligan(event.payload.drawCount, event.payload.order);
+    return playArea.mulligan(event.payload.drawCount, event.payload.order, { preventEmit: true });
   },
 };
 
