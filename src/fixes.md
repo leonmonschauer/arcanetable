@@ -1,0 +1,3 @@
+- Sync klappt noch nicht richtig, manche Sachen sind tapped & manche nicht
+- Solider Token ist nicht von Mel verschoben worden
+- 
