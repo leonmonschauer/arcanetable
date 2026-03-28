@@ -192,7 +192,7 @@ export function init({ gameId }) {
 
 export function startSpectating() {
   setIsSpectating(true);
-  setPlayerCount(count => count - 1);
+  setPlayerCount(count => Math.max(0, count - 1));
   provider.awareness.setLocalStateField('isSpectating', true);
   orbitControls.target.copy(table.position);
   orbitControls.update();
@@ -258,23 +258,14 @@ export function onConcede(clientId?: string) {
     startSpectating();
     sendEvent({ type: 'concede' });
   } else {
-    setPlayerCount(count => count - 1);
+    setPlayerCount(count => Math.max(0, count - 1));
   }
   console.log(clientId);
   console.log(playAreas);
   const playArea = playAreas[clientId];
+  if (!playArea) return;
   playArea.destroy();
   setPlayAreas(clientId, undefined);
-  if (playerCount() < 2) {
-    Object.values(playAreas).forEach(playArea => {
-      playArea.destroy();
-    });
-    setSelectedDeckIndex(undefined);
-    setIsSpectating(false);
-    setIsIntitialized(false);
-    orbitControls?.dispose();
-    selection.destroy();
-  }
 }
 
 export function updateFocusCamera(target: Object3D, offset = new Vector3(CARD_WIDTH / 4, 0, 0)) {
