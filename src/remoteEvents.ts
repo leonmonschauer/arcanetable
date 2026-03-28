@@ -159,6 +159,33 @@ const EVENTS = {
   mulligan(event: Event, playArea: PlayArea) {
     return playArea.mulligan(event.payload.drawCount, event.payload.order, { preventEmit: true });
   },
+  syncBattlefieldState(event: Event) {
+    const payloadCards = event.payload?.cards ?? [];
+    payloadCards.forEach(state => {
+      const card = cardsById.get(state.id);
+      if (!card) return;
+      if (card.mesh.userData.clientId !== event.clientID) return;
+      if (card.mesh.userData.location !== 'battlefield') return;
+
+      setCardData(card.mesh, 'isTapped', !!state.isTapped);
+      setCardData(card.mesh, 'isFlipped', !!state.isFlipped);
+
+      if (state.position) {
+        card.mesh.position.fromArray(state.position);
+      }
+      if (state.rotation) {
+        card.mesh.rotation.fromArray(state.rotation);
+      }
+
+      let zone = zonesById.get(card.mesh.userData.zoneId);
+      if (zone && state.position) {
+        setCardData(card.mesh, `zone.${zone.id}.position`, state.position);
+      }
+      if (zone && state.rotation) {
+        setCardData(card.mesh, `zone.${zone.id}.rotation`, state.rotation);
+      }
+    });
+  },
 };
 
 function addLogMessage(event) {

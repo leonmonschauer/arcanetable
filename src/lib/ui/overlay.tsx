@@ -31,7 +31,7 @@ import {
   selection,
 } from '../globals';
 import CommandPalette from '../shortcuts/command-palette';
-import { untapAll } from '../shortcuts/commands/field';
+import { syncBattlefieldToOthers, untapAll } from '../shortcuts/commands/field';
 import HotkeysTable from '../shortcuts/hotkeys-table';
 import CardBattlefieldMenu from './cardBattlefieldMenu';
 import CounterDialog from './counterDialog';
@@ -169,6 +169,9 @@ const Overlay: Component = () => {
           class={`${styles.menu} flex-col items-start`}>
           <MenubarMenu>
             <Show when={!isSpectating()}>
+              <MenubarItem class='w-full flex' onClick={() => syncBattlefieldToOthers(playArea)}>
+                Sync Me To Others
+              </MenubarItem>
               <MenubarItem class='w-full flex' onClick={() => untapAll(playArea)}>
                 Untap All
               </MenubarItem>

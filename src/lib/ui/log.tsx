@@ -80,6 +80,8 @@ export function parseLogEntry(entry) {
       return `${userData.isTapped ? 'tapped' : 'untapped'} ${card?.detail.name}`;
     case 'shuffleDeck':
       return 'shuffled';
+    case 'syncBattlefieldState':
+      return 'synced battlefield state';
     case 'mulligan':
       return `mulliganed and drew ${entry.payload.drawCount} cards`;
     case 'createCounter':

@@ -14,3 +14,22 @@ export function untapAll(playArea: PlayArea) {
 
   tappedCards.forEach(card => playArea.tap(card));
 }
+
+export function syncBattlefieldToOthers(playArea: PlayArea) {
+  const localClientId = provider?.awareness?.clientID;
+  const cards = playArea.battlefieldZone.cards
+    .map(card => card.mesh)
+    .filter(mesh => mesh.userData.clientId === localClientId)
+    .map(mesh => ({
+      id: mesh.userData.id,
+      isTapped: !!mesh.userData.isTapped,
+      isFlipped: !!mesh.userData.isFlipped,
+      position: mesh.position.toArray(),
+      rotation: mesh.rotation.toArray(),
+    }));
+
+  playArea.emitEvent({
+    type: 'syncBattlefieldState',
+    payload: { cards },
+  });
+}

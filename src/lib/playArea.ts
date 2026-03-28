@@ -470,7 +470,7 @@ export class PlayArea {
     this.listeners.push(callback);
   }
 
-  private emitEvent(event = {}) {
+  emitEvent(event = {}) {
     this.listeners.forEach(callback => {
       callback(event);
     });
