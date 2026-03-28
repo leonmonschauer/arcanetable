@@ -8,7 +8,7 @@ import {
   DialogTitle,
 } from '~/components/ui/dialog';
 import { TextField, TextFieldInput, TextFieldLabel } from '~/components/ui/text-field';
-import { colorHashLight, deckIndex, sendEvent } from '../globals';
+import { colorHashLight, deckIndex, provider, sendEvent } from '../globals';
 import { sha1 } from '../utils';
 
 export const [isCounterDialogOpen, setIsCounterDialogOpen] = createSignal(false);
@@ -20,6 +20,14 @@ function createCounter(counter) {
     return [...counters, counter];
   });
   sendEvent({ type: 'createCounter', counter });
+  const localState = provider?.awareness?.getLocalState?.() ?? {};
+  provider?.awareness?.setLocalState?.({
+    ...localState,
+    counters: {
+      ...(localState.counters ?? {}),
+      [counter.id]: localState?.counters?.[counter.id] ?? 0,
+    },
+  });
 
   let decks = JSON.parse(localStorage.getItem('decks') || `{}`);
   decks.decks[deckIndex()].counters = decks.decks[deckIndex()].counters ?? [];
@@ -43,7 +51,13 @@ const CounterDialog: Component = props => {
             async function create() {
               const name = String(formData.get('name') ?? '').trim();
               if (!name) return;
-              let id = await sha1(name);
+              let id: string;
+              try {
+                id = await sha1(name);
+              } catch (error) {
+                // `crypto.subtle` can be unavailable on some non-secure origins.
+                id = `counter-${name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '')}`;
+              }
               formData.set('name', name);
               formData.set('id', id);
               formData.set('color', colorHashLight.hex(name));
